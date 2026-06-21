@@ -1,0 +1,67 @@
+-- -- Проверьте, что все таблицы созданы
+-- SELECT table_schema, table_name 
+-- FROM information_schema.tables 
+-- WHERE table_schema = 'core';
+
+-- -- Проверьте количество записей
+-- SELECT 'users' as table_name, COUNT(*) as count FROM core.users
+-- UNION ALL
+-- SELECT 'products', COUNT(*) FROM core.products
+-- UNION ALL
+-- SELECT 'orders', COUNT(*) FROM core.orders
+-- UNION ALL
+-- SELECT 'order_items', COUNT(*) FROM core.order_items
+-- UNION ALL
+-- SELECT 'reviews', COUNT(*) FROM core.reviews;
+
+-- -- Проверка всех существующих внешних ключей
+-- SELECT 
+--     tc.table_name,
+--     tc.constraint_name,
+--     kcu.column_name,
+--     ccu.table_name AS referenced_table,
+--     ccu.column_name AS referenced_column
+-- FROM information_schema.table_constraints tc
+-- JOIN information_schema.key_column_usage kcu
+--     ON tc.constraint_name = kcu.constraint_name
+-- JOIN information_schema.constraint_column_usage ccu
+--     ON ccu.constraint_name = tc.constraint_name
+-- WHERE tc.constraint_type = 'FOREIGN KEY'
+--     AND tc.table_schema = 'core'
+-- ORDER BY tc.table_name;
+
+
+-- -- Заказы с данными пользователей (исправлено)
+-- SELECT 
+--     o.order_id,
+--     o.order_date,
+--     u.first_name,
+--     u.last_name,
+--     u.email,
+--     o.status,
+--     o.payment_method,
+--     o.shipping_cost,
+--     (SELECT SUM(total_price) FROM core.order_items WHERE order_id = o.order_id) AS order_total
+-- FROM core.orders o
+-- JOIN core.users u ON o.user_id = u.user_id
+-- LIMIT 10;;
+
+
+-- -- Детали заказов с товарами и категориями (исправлено)
+-- SELECT 
+--     o.order_id,
+--     o.order_date,
+--     u.first_name || ' ' || u.last_name AS customer,
+--     p.product_name,
+--     c.category_name,
+--     oi.quantity,
+--     oi.price_at_time,
+--     oi.discount_percent,
+--     oi.total_price,
+--     o.shipping_cost
+-- FROM core.orders o
+-- JOIN core.users u ON o.user_id = u.user_id
+-- JOIN core.order_items oi ON o.order_id = oi.order_id
+-- JOIN core.products p ON oi.product_id = p.product_id
+-- JOIN core.categories c ON p.category_id = c.category_id
+-- LIMIT 20;
